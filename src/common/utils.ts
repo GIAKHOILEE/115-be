@@ -29,3 +29,14 @@ export function removeVietnameseTones(str: string): string {
     .replace(/đ/g, 'd')
     .replace(/Đ/g, 'D')
 }
+
+export function formatArrayToObject(arr: any[], key: string = 'id') {
+  const result: any = {}
+  arr?.forEach((item: any) => {
+    result[item[key]] = {
+      ...item,
+    }
+  })
+
+  return result
+}
