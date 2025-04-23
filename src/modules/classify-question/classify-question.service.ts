@@ -44,6 +44,7 @@ export class ClassifyQuestionService {
       question: question.question,
       multiple_choice: question.multiple_choice,
       answer: question.answer.map((answer, index) => ({
+        id: index + 1,
         option: answer.option,
         value: answer.value,
         level: answer.level,
@@ -94,10 +95,11 @@ export class ClassifyQuestionService {
     }
 
     const formatQuestions: IQuestion[] = classifyQuestion.questions.map((question, index) => ({
-      id: index + 1,
+      id: question.id,
       question: question.question,
       multiple_choice: question.multiple_choice,
-      answer: question.answer.map(answer => ({
+      answer: question.answer.map((answer, index) => ({
+        id: answer.id,
         option: answer.option,
         value: answer.value,
         level: answer.level,
@@ -148,10 +150,11 @@ export class ClassifyQuestionService {
 
     if (questions) {
       const formatQuestions: IQuestion[] = questions.map((question, index) => ({
-        id: index + 1,
+        id: question.id,
         question: question.question,
         multiple_choice: question.multiple_choice,
-        answer: question.answer.map(answer => ({
+        answer: question.answer.map((answer, index) => ({
+          id: answer.id,
           option: answer.option,
           value: answer.value,
           level: answer.level,

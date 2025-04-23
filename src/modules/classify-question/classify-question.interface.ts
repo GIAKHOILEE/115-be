@@ -13,6 +13,7 @@ export interface IQuestion {
   answer: IAnswer[]
 }
 export interface IAnswer {
+  id: number
   option: string
   value: string
   level: 'Green' | 'Yellow' | 'Red' | 'Purple' | 'Orange' | 'Blue'
