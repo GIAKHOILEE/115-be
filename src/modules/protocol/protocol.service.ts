@@ -27,6 +27,7 @@ export class ProtocolService {
   }
 
   async findAll(paginateProtocolDto: PaginateProtocolDto): Promise<{ formattedData: any; meta: any }> {
+    const { name, ...paginateDto } = paginateProtocolDto
     const queryBuilder = this.protocolRepository
       .createQueryBuilder('protocol')
       .select([
@@ -37,7 +38,18 @@ export class ProtocolService {
         'protocol.note',
       ])
 
-    const { data, meta } = await paginate(queryBuilder, paginateProtocolDto)
+    if (name) {
+      const keyword = name.toLowerCase()
+      queryBuilder.andWhere(
+        `
+          (LOWER(JSON_UNQUOTE(JSON_EXTRACT(protocol.name, "$.vi"))) LIKE :keyword
+           OR LOWER(JSON_UNQUOTE(JSON_EXTRACT(protocol.name, "$.en"))) LIKE :keyword)
+        `,
+        { keyword: `%${keyword}%` },
+      )
+    }
+
+    const { data, meta } = await paginate(queryBuilder, paginateDto)
 
     const formattedData = data.map(item => ({
       id: item.id,

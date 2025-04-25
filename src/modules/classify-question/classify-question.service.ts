@@ -63,11 +63,23 @@ export class ClassifyQuestionService {
   async findAll(
     paginateClassifyQuestionDto: PaginateClassifyQuestionDto,
   ): Promise<{ formattedData: any; meta: any }> {
+    const { name, ...paginateClassifyQuestion } = paginateClassifyQuestionDto
     const queryBuilder = this.classifyQuestionRepository
       .createQueryBuilder('classify_question')
       .select(['classify_question.id', 'classify_question.protocol_code', 'classify_question.name'])
 
-    const { data, meta } = await paginate(queryBuilder, paginateClassifyQuestionDto)
+    if (name) {
+      const keyword = name.toLowerCase()
+      queryBuilder.andWhere(
+        `
+            (LOWER(JSON_UNQUOTE(JSON_EXTRACT(protocol.name, "$.vi"))) LIKE :keyword
+             OR LOWER(JSON_UNQUOTE(JSON_EXTRACT(protocol.name, "$.en"))) LIKE :keyword)
+          `,
+        { keyword: `%${keyword}%` },
+      )
+    }
+
+    const { data, meta } = await paginate(queryBuilder, paginateClassifyQuestion)
     const formattedData = data.map(item => ({
       id: item.id,
       protocol_code: item.protocol_code,
