@@ -12,7 +12,7 @@ export class PaginateProtocolDto extends PaginationParams {
   @IsString()
   @IsOptional()
   @ApiPropertyOptional({ description: ' filter tên giao thức' })
-  name: string
+  keyword: string
 
   // @IsString()
   // @IsOptional()

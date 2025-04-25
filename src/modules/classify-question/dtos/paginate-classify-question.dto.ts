@@ -11,5 +11,5 @@ export class PaginateClassifyQuestionDto extends PaginationParams {
   @IsString()
   @IsOptional()
   @ApiPropertyOptional({ description: 'Tên câu hỏi' })
-  name: string
+  keyword: string
 }

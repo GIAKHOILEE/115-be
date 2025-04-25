@@ -63,19 +63,19 @@ export class ClassifyQuestionService {
   async findAll(
     paginateClassifyQuestionDto: PaginateClassifyQuestionDto,
   ): Promise<{ formattedData: any; meta: any }> {
-    const { name, ...paginateClassifyQuestion } = paginateClassifyQuestionDto
+    const { keyword, ...paginateClassifyQuestion } = paginateClassifyQuestionDto
     const queryBuilder = this.classifyQuestionRepository
       .createQueryBuilder('classify_question')
       .select(['classify_question.id', 'classify_question.protocol_code', 'classify_question.name'])
 
-    if (name) {
-      const keyword = name.toLowerCase()
+    if (keyword) {
+      const keywordLower = keyword.toLowerCase()
       queryBuilder.andWhere(
         `
-            (LOWER(JSON_UNQUOTE(JSON_EXTRACT(protocol.name, "$.vi"))) LIKE :keyword
-             OR LOWER(JSON_UNQUOTE(JSON_EXTRACT(protocol.name, "$.en"))) LIKE :keyword)
+            (LOWER(JSON_UNQUOTE(JSON_EXTRACT(classify_question.name, "$.vi"))) LIKE :keyword
+             OR LOWER(JSON_UNQUOTE(JSON_EXTRACT(classify_question.name, "$.en"))) LIKE :keyword)
           `,
-        { keyword: `%${keyword}%` },
+        { keyword: `%${keywordLower}%` },
       )
     }
 
