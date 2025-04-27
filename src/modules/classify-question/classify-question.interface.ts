@@ -1,3 +1,5 @@
+import { RecordLevel } from 'src/constants/record-level.enum'
+
 export interface IClassifyQuestion {
   protocol_code: number
   name: {
@@ -9,13 +11,13 @@ export interface IClassifyQuestion {
 export interface IQuestion {
   id: number
   question: string
-  multiple_choice: boolean | false
+  multiple_choice?: boolean | false
   answer: IAnswer[]
 }
 export interface IAnswer {
   id: number
   option: string
   value: string
-  level: 'Green' | 'Yellow' | 'Red' | 'Purple' | 'Orange' | 'Blue'
+  level: RecordLevel
   change_protocol: number | null
 }

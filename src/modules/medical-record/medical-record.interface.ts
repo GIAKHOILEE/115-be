@@ -1,15 +1,24 @@
+import { RecordLevel } from 'src/constants/record-level.enum'
+import { IQuestion } from '../classify-question/classify-question.interface'
+
 export interface IMedicalRecord {
   id: number
+  code: string
   doctor: IDoctorInfo
-  records: IRecord[]
-  level_system: 'Green' | 'Yellow' | 'Red' | 'Purple' | 'Orange' | 'Blue' // Hệ thống đánh giá
-  level_doctor: 'Green' | 'Yellow' | 'Red' | 'Purple' | 'Orange' | 'Blue' | null // doctor đánh giá
+  patient: Ipatient
+  medical_advice: boolean
+  records?: IRecord[]
+  // level_system: RecordLevel | null
 }
 
 export interface IRecord {
   protocol_code: number
   note: string
-  question_answer?: IResultQandA[]
+  protocol_before?: number
+  // question_answer?: IResultQandA[]
+  question_answer?: IQuestion[]
+  level_system: RecordLevel | null // Hệ thống đánh giá
+  level_doctor: RecordLevel | null // doctor đánh giá
 }
 
 export interface IResultQandA {
@@ -25,7 +34,17 @@ export interface IDoctorInfo {
   role: 'Admin' | 'Doctor' | 'Patient'
 }
 
+export interface Ipatient {
+  name: string
+  email?: string
+  birth?: string
+  gender?: 'Male' | 'Female'
+}
+
 export interface IProtocolChange {
   protocol_code: number
-  id: number
+  name: {
+    en: string
+    vi: string
+  }
 }
