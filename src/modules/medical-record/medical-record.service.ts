@@ -10,6 +10,8 @@ import { IAnswer, IQuestion } from '../classify-question/classify-question.inter
 import { formatArrayToObject } from 'src/common/utils'
 import { CreateMedicalRecordDto, CreateMedicalRecordDtoV2 } from './dtos/create-medical-record.dto'
 import { RecordLevel } from 'src/constants/record-level.enum'
+import { paginate } from 'src/common/pagination'
+import { PaginateMedicalRecordDto } from './dtos/paginate-medical-record.dto'
 
 @Injectable()
 export class MedicalRecordService {
@@ -324,6 +326,41 @@ export class MedicalRecordService {
     }
   }
 
+  // get List Medical Record
+  async getListMedicalRecord(paginateMedicalRecordDto: PaginateMedicalRecordDto): Promise<IMedicalRecord[]> {
+    const medicalRecords = await this.medicalRecordRepository
+      .createQueryBuilder('medical_records')
+      .select([
+        'medical_records.id',
+        'medical_records.code',
+        'medical_records.patient',
+        'medical_records.doctor',
+        'medical_records.level_system',
+        'medical_records.level_doctor',
+        'medical_records.medical_advice',
+        'medical_records.records',
+      ])
+
+    const { data } = await paginate(medicalRecords, paginateMedicalRecordDto)
+    const formatMedicalRecords: IMedicalRecord[] = data.map(medicalRecord => {
+      return {
+        id: medicalRecord.id,
+        code: medicalRecord.code,
+        patient: medicalRecord.patient,
+        doctor: medicalRecord.doctor,
+        medical_advice: medicalRecord.medical_advice,
+        records: medicalRecord.records.map(record => ({
+          protocol_code: record.protocol_code,
+          note: record.note,
+          protocol_before: record.protocol_before,
+          level_system: record.level_system,
+          level_doctor: record.level_doctor,
+        })),
+      }
+    })
+    return formatMedicalRecords
+  }
+  // lấy medical record theo id
   async getMedicalRecord(id: number): Promise<IMedicalRecord> {
     const medicalRecord = await this.medicalRecordRepository.findOne({
       where: { id },
@@ -331,6 +368,22 @@ export class MedicalRecordService {
     if (!medicalRecord) {
       throw new NotFoundException('Medical record not found')
     }
-    return medicalRecord
+
+    const formatMedicalRecord: IMedicalRecord = {
+      id: medicalRecord.id,
+      code: medicalRecord.code,
+      patient: medicalRecord.patient,
+      doctor: medicalRecord.doctor,
+      medical_advice: medicalRecord.medical_advice,
+      records: medicalRecord.records.map(record => ({
+        protocol_code: record.protocol_code,
+        note: record.note,
+        protocol_before: record.protocol_before,
+        level_system: record.level_system,
+        level_doctor: record.level_doctor,
+        question_answer: record.question_answer,
+      })),
+    }
+    return formatMedicalRecord
   }
 }

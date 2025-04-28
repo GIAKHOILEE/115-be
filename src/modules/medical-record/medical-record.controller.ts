@@ -1,9 +1,10 @@
-import { Body, Controller, Param, Post, Query } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common'
 import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import { ResponseDto } from 'src/common/response.dto'
 import { CheckProtocolChangeDto } from './dtos/check-change-protocol.dto'
 import { CreateMedicalRecordDto, CreateMedicalRecordDtoV2 } from './dtos/create-medical-record.dto'
 import { MedicalRecordService } from './medical-record.service'
+import { PaginateMedicalRecordDto } from './dtos/paginate-medical-record.dto'
 
 @Controller('records')
 export class MedicalRecordController {
@@ -72,6 +73,38 @@ export class MedicalRecordController {
     const data = await this.medicalRecordService.submitMedicalRecordV2(submitMedicalRecordDto, id)
     return new ResponseDto({
       messageCode: 'SUBMIT_MEDICAL_RECORD_SUCCESS',
+      statusCode: 200,
+      data,
+    })
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get list medical record' })
+  @ApiResponse({
+    status: 200,
+    description: 'Get list medical record success',
+  })
+  async getListMedicalRecord(
+    @Query() paginateMedicalRecordDto: PaginateMedicalRecordDto,
+  ): Promise<ResponseDto> {
+    const data = await this.medicalRecordService.getListMedicalRecord(paginateMedicalRecordDto)
+    return new ResponseDto({
+      messageCode: 'GET_LIST_MEDICAL_RECORD_SUCCESS',
+      statusCode: 200,
+      data,
+    })
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get detail medical record' })
+  @ApiResponse({
+    status: 200,
+    description: 'Get detail medical record success',
+  })
+  async getDetailMedicalRecord(@Param('id') id: number): Promise<ResponseDto> {
+    const data = await this.medicalRecordService.getMedicalRecord(id)
+    return new ResponseDto({
+      messageCode: 'GET_DETAIL_MEDICAL_RECORD_SUCCESS',
       statusCode: 200,
       data,
     })
