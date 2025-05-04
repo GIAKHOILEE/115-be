@@ -94,12 +94,12 @@ export class CreateMedicalRecordDtoV2 {
   protocol_before: number | null
 
   @IsOptional()
-  @IsString()
+  @IsNumber()
   @ApiPropertyOptional({
-    description: 'Xanh Lá Cây | Xanh Da Trời | Vàng | Đỏ | Tím | Cam',
-    example: 'Xanh Lá Cây',
+    description: '1 | 2 | 3 | 4 | 5 | 6',
+    example: 1,
   })
-  level_doctor: string | null // doctor đánh giá
+  level_doctor: number | null // doctor đánh giá
 
   @IsOptional()
   @IsObject()

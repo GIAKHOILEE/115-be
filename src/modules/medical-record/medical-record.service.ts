@@ -237,12 +237,12 @@ export class MedicalRecordService {
     }
 
     const levelMapping = {
-      'Xanh Lá Cây': RecordLevel.Green,
-      'Xanh Da Trời': RecordLevel.Blue,
-      Vàng: RecordLevel.Yellow,
-      Đỏ: RecordLevel.Red,
-      Tím: RecordLevel.Purple,
-      Cam: RecordLevel.Orange,
+      1: RecordLevel.Green,
+      2: RecordLevel.Blue,
+      3: RecordLevel.Yellow,
+      4: RecordLevel.Red,
+      5: RecordLevel.Purple,
+      6: RecordLevel.Orange,
     }
     // Xác định màu cao nhất - change_protocol
     const colorPriority: RecordLevel[] = [
