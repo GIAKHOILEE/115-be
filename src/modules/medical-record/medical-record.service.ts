@@ -205,10 +205,10 @@ export class MedicalRecordService {
     // }
     // kiểm tra protocol_before
     if (protocol_before) {
-      const isExistProtocolBefore = await this.protocolRepository
-        .createQueryBuilder('protocols')
-        .select(['protocols.protocol_code'])
-        .where('protocols.protocol_code = :protocol_code', { protocol_code: protocol_before })
+      const isExistProtocolBefore = await this.medicalRecordRepository
+        .createQueryBuilder('medical_records')
+        .select(['medical_records.id'])
+        .where('medical_records.id = :id', { id: protocol_before })
         .getOne()
 
       if (!isExistProtocolBefore) {
