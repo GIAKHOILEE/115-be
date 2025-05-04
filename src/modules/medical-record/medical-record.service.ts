@@ -311,7 +311,7 @@ export class MedicalRecordService {
       return {
         id,
         code,
-        records: [...medicalRecord.records, newRecord],
+        records: newRecord,
         change_protocol: protocolChangeList.length > 0 ? protocolChangeList : undefined,
       }
     } else {
@@ -360,22 +360,32 @@ export class MedicalRecordService {
       ])
 
     const { data } = await paginate(medicalRecords, paginateMedicalRecordDto)
-    const formatMedicalRecords: IMedicalRecord[] = data.map(medicalRecord => {
-      return {
-        id: medicalRecord.id,
-        code: medicalRecord.code,
-        patient: medicalRecord.patient,
-        doctor: medicalRecord.doctor,
-        medical_advice: medicalRecord.medical_advice,
-        records: medicalRecord.records.map(record => ({
-          protocol_code: record.protocol_code,
-          note: record.note,
-          protocol_before: record.protocol_before,
-          level_system: record.level_system,
-          level_doctor: record.level_doctor,
-        })),
-      }
-    })
+    const formatMedicalRecords: IMedicalRecord[] = await Promise.all(
+      data.map(async medicalRecord => {
+        // Lấy name của protocol_code
+        const lastRecord = medicalRecord.records[medicalRecord.records.length - 1]
+        const protocolName = await this.protocolRepository.findOne({
+          where: { protocol_code: lastRecord.protocol_code },
+        })
+
+        return {
+          id: medicalRecord.id,
+          code: medicalRecord.code,
+          patient: medicalRecord.patient,
+          doctor: medicalRecord.doctor,
+          medical_advice: medicalRecord.medical_advice,
+          records: {
+            protocol_code: lastRecord.protocol_code,
+            protocol_name: protocolName.name,
+            note: lastRecord.note,
+            protocol_before: lastRecord.protocol_before,
+            level_system: lastRecord.level_system,
+            level_doctor: lastRecord.level_doctor,
+          },
+        }
+      }),
+    )
+
     return formatMedicalRecords
   }
   // lấy medical record theo id
@@ -387,20 +397,26 @@ export class MedicalRecordService {
       throw new NotFoundException('Medical record not found')
     }
 
+    // Chỉ trả về record cuối cùng, không trả ra mảng
+    const lastRecord = medicalRecord.records[medicalRecord.records.length - 1]
+    const protocolName = await this.protocolRepository.findOne({
+      where: { protocol_code: lastRecord.protocol_code },
+    })
     const formatMedicalRecord: IMedicalRecord = {
       id: medicalRecord.id,
       code: medicalRecord.code,
       patient: medicalRecord.patient,
       doctor: medicalRecord.doctor,
       medical_advice: medicalRecord.medical_advice,
-      records: medicalRecord.records.map(record => ({
-        protocol_code: record.protocol_code,
-        note: record.note,
-        protocol_before: record.protocol_before,
-        level_system: record.level_system,
-        level_doctor: record.level_doctor,
-        question_answer: record.question_answer,
-      })),
+      records: {
+        protocol_code: lastRecord.protocol_code,
+        protocol_name: protocolName.name,
+        note: lastRecord.note,
+        protocol_before: lastRecord.protocol_before,
+        level_system: lastRecord.level_system,
+        level_doctor: lastRecord.level_doctor,
+        question_answer: lastRecord.question_answer,
+      },
     }
     return formatMedicalRecord
   }

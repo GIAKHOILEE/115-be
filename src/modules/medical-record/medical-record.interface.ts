@@ -7,12 +7,16 @@ export interface IMedicalRecord {
   doctor: IDoctorInfo
   patient: Ipatient
   medical_advice: boolean
-  records?: IRecord[]
+  records?: IRecord
   // level_system: RecordLevel | null
 }
 
 export interface IRecord {
   protocol_code: number
+  protocol_name?: {
+    vi: string
+    en: string
+  }
   note: string
   protocol_before?: number
   // question_answer?: IResultQandA[]
