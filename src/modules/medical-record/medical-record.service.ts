@@ -270,15 +270,17 @@ export class MedicalRecordService {
       }
     }
 
-    const protocolChangeList: IProtocolChange[] = await this.protocolRepository
-      .createQueryBuilder('protocols')
-      .select(['protocols.protocol_code', 'protocols.name'])
-      .where('protocols.protocol_code IN (:...protocol_codes)', {
-        protocol_codes: changeProtocols,
-      })
-      .getMany()
+    let protocolChangeList: IProtocolChange[] = []
+    if (changeProtocols.length > 0) {
+      protocolChangeList = await this.protocolRepository
+        .createQueryBuilder('protocols')
+        .select(['protocols.protocol_code', 'protocols.name'])
+        .where('protocols.protocol_code IN (:...protocol_codes)', {
+          protocol_codes: changeProtocols,
+        })
+        .getMany()
+    }
 
-    console.log('protocolChangeList', protocolChangeList)
     const levelMappingNumber = {
       [RecordLevel.Green]: 1,
       [RecordLevel.Blue]: 2,
