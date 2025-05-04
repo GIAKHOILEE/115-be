@@ -204,17 +204,17 @@ export class MedicalRecordService {
     //   throw new BadRequestException('protocol_before should not exist')
     // }
     // kiểm tra protocol_before
-    // if (protocol_before) {
-    //   const isExistProtocolBefore = await this.protocolRepository
-    //     .createQueryBuilder('protocols')
-    //     .select(['protocols.protocol_code'])
-    //     .where('protocols.protocol_code = :protocol_code', { protocol_code: protocol_before })
-    //     .getOne()
+    if (protocol_before) {
+      const isExistProtocolBefore = await this.protocolRepository
+        .createQueryBuilder('protocols')
+        .select(['protocols.protocol_code'])
+        .where('protocols.protocol_code = :protocol_code', { protocol_code: protocol_before })
+        .getOne()
 
-    //   if (!isExistProtocolBefore) {
-    //     throw new NotFoundException('Protocol before not found')
-    //   }
-    // }
+      if (!isExistProtocolBefore) {
+        throw new NotFoundException('Protocol before not found')
+      }
+    }
 
     // Kiểm tra protocol code
     const isExistProtocol = await this.protocolRepository
