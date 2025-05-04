@@ -236,6 +236,14 @@ export class MedicalRecordService {
       throw new NotFoundException('Classify question not found')
     }
 
+    const levelMapping = {
+      'Xanh Lá Cây': RecordLevel.Green,
+      'Xanh Da Trời': RecordLevel.Blue,
+      Vàng: RecordLevel.Yellow,
+      Đỏ: RecordLevel.Red,
+      Tím: RecordLevel.Purple,
+      Cam: RecordLevel.Orange,
+    }
     // Xác định màu cao nhất - change_protocol
     const colorPriority: RecordLevel[] = [
       RecordLevel.Green,
@@ -267,6 +275,16 @@ export class MedicalRecordService {
       })
       .getMany()
 
+    const levelMappingNumber = {
+      [RecordLevel.Green]: 1,
+      [RecordLevel.Blue]: 2,
+      [RecordLevel.Yellow]: 3,
+      [RecordLevel.Red]: 4,
+      [RecordLevel.Purple]: 5,
+      [RecordLevel.Orange]: 6,
+    }
+
+    const mappingLevelDoctor = levelMapping[level_doctor]
     if (id) {
       const medicalRecord = await this.medicalRecordRepository.findOne({
         where: { id },
@@ -279,8 +297,8 @@ export class MedicalRecordService {
         protocol_code: protocol_code,
         note: note,
         protocol_before: protocol_before,
-        level_system: highestLevel,
-        level_doctor: level_doctor,
+        level_system: levelMappingNumber[highestLevel],
+        level_doctor: level_doctor ? levelMappingNumber[mappingLevelDoctor] : null,
         question_answer: resultQandA,
       }
       await this.medicalRecordRepository.update(id, {
@@ -301,8 +319,8 @@ export class MedicalRecordService {
         protocol_code: protocol_code,
         note: note || null,
         protocol_before: protocol_before || null,
-        level_system: highestLevel,
-        level_doctor: level_doctor || null,
+        level_system: levelMappingNumber[highestLevel],
+        level_doctor: level_doctor ? levelMappingNumber[mappingLevelDoctor] : null,
         question_answer: resultQandA,
       }
       const medicalRecord = this.medicalRecordRepository.create({
@@ -314,7 +332,7 @@ export class MedicalRecordService {
         protocol_before: protocol_before || null,
         records: [newRecord],
         level_system: highestLevel,
-        level_doctor: level_doctor || null,
+        level_doctor: level_doctor ? levelMappingNumber[mappingLevelDoctor] : null,
       })
       const savedMedicalRecord = await this.medicalRecordRepository.save(medicalRecord)
       return {

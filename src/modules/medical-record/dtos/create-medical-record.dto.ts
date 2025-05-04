@@ -94,12 +94,12 @@ export class CreateMedicalRecordDtoV2 {
   protocol_before: number | null
 
   @IsOptional()
-  @IsEnum(RecordLevel)
+  @IsString()
   @ApiPropertyOptional({
-    description: 'Green | Yellow | Orange | Red | Purple | Blue',
-    example: 'Green',
+    description: 'Xanh Lá Cây | Xanh Da Trời | Vàng | Đỏ | Tím | Cam',
+    example: 'Xanh Lá Cây',
   })
-  level_doctor: RecordLevel | null // doctor đánh giá
+  level_doctor: string | null // doctor đánh giá
 
   @IsOptional()
   @IsObject()

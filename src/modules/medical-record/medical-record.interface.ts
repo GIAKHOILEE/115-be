@@ -17,8 +17,8 @@ export interface IRecord {
   protocol_before?: number
   // question_answer?: IResultQandA[]
   question_answer?: IQuestion[]
-  level_system: RecordLevel | null // Hệ thống đánh giá
-  level_doctor: RecordLevel | null // doctor đánh giá
+  level_system: number | null // Hệ thống đánh giá
+  level_doctor: number | null // doctor đánh giá
 }
 
 export interface IResultQandA {
