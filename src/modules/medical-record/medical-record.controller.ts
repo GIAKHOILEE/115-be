@@ -59,7 +59,6 @@ export class MedicalRecordController {
     name: 'id',
     required: false,
     type: Number,
-    description: 'ID của medical record nếu cần submit lần 2',
   })
   @ApiOperation({ summary: 'Submit medical record' })
   @ApiResponse({

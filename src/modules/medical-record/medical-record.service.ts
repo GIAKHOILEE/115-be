@@ -166,10 +166,11 @@ export class MedicalRecordService {
   }
 
   async submitMedicalRecordV2(submitMedicalRecordDto: CreateMedicalRecordDtoV2, id?: number): Promise<any> {
+    // id là protocol_code
     const {
       doctor,
       patient,
-      protocol_code,
+      protocol_code, // là id của record trước đó
       code,
       resultQandA,
       note,
@@ -179,40 +180,41 @@ export class MedicalRecordService {
     } = submitMedicalRecordDto
 
     // code phải có khi tạo mới
-    if (!code && !id) {
+    if (!code && !protocol_before) {
       throw new BadRequestException('Code is required')
     }
     // kiểm tra mã bênh án đã tồn tại
-    const isExistCode = await this.medicalRecordRepository
-      .createQueryBuilder('medical_records')
-      .select(['medical_records.code'])
-      .where('medical_records.code = :code', { code })
-      .getOne()
+    if (code) {
+      const isExistCode = await this.medicalRecordRepository
+        .createQueryBuilder('medical_records')
+        .select(['medical_records.code'])
+        .where('medical_records.code = :code', { code })
+        .getOne()
 
-    if (isExistCode) {
-      throw new BadRequestException('Code already exists')
+      if (isExistCode) {
+        throw new BadRequestException('Code already exists')
+      }
     }
-
     // nếu có patient thì name không được để trống
     if (patient && !patient.name) {
       throw new BadRequestException('Patient name is required')
     }
     // protocol_before không được tồn tại khi tạo mới
-    if (protocol_before && !id) {
-      throw new BadRequestException('protocol_before should not exist')
-    }
+    // if (protocol_before && !id) {
+    //   throw new BadRequestException('protocol_before should not exist')
+    // }
     // kiểm tra protocol_before
-    if (protocol_before) {
-      const isExistProtocolBefore = await this.protocolRepository
-        .createQueryBuilder('protocols')
-        .select(['protocols.protocol_code'])
-        .where('protocols.protocol_code = :protocol_code', { protocol_code: protocol_before })
-        .getOne()
+    // if (protocol_before) {
+    //   const isExistProtocolBefore = await this.protocolRepository
+    //     .createQueryBuilder('protocols')
+    //     .select(['protocols.protocol_code'])
+    //     .where('protocols.protocol_code = :protocol_code', { protocol_code: protocol_before })
+    //     .getOne()
 
-      if (!isExistProtocolBefore) {
-        throw new NotFoundException('Protocol before not found')
-      }
-    }
+    //   if (!isExistProtocolBefore) {
+    //     throw new NotFoundException('Protocol before not found')
+    //   }
+    // }
 
     // Kiểm tra protocol code
     const isExistProtocol = await this.protocolRepository
@@ -221,6 +223,7 @@ export class MedicalRecordService {
       .where('protocols.protocol_code = :protocol_code', { protocol_code })
       .getOne()
 
+    console.log('isExistProtocol', isExistProtocol)
     if (!isExistProtocol) {
       throw new NotFoundException('Protocol not found')
     }
@@ -232,6 +235,7 @@ export class MedicalRecordService {
       .where('classify_questions.protocol_code = :protocol_code', { protocol_code })
       .getOne()
 
+    console.log('isExistClassifyQuestion', isExistClassifyQuestion)
     if (!isExistClassifyQuestion) {
       throw new NotFoundException('Classify question not found')
     }
@@ -258,11 +262,10 @@ export class MedicalRecordService {
 
     for (const question of resultQandA) {
       for (const answer of question.answer) {
-        if (colorPriority.indexOf(answer.level) > colorPriority.indexOf(highestLevel)) {
-          highestLevel = answer.level
-          changeProtocols = [answer.change_protocol]
-        } else if (answer.level === highestLevel) {
+        if (answer.change_protocol) {
           changeProtocols.push(answer.change_protocol)
+        } else if (colorPriority.indexOf(answer.level) > colorPriority.indexOf(highestLevel)) {
+          highestLevel = answer.level
         }
       }
     }
@@ -275,6 +278,7 @@ export class MedicalRecordService {
       })
       .getMany()
 
+    console.log('protocolChangeList', protocolChangeList)
     const levelMappingNumber = {
       [RecordLevel.Green]: 1,
       [RecordLevel.Blue]: 2,
@@ -285,9 +289,9 @@ export class MedicalRecordService {
     }
 
     const mappingLevelDoctor = levelMapping[level_doctor]
-    if (id) {
+    if (protocol_before) {
       const medicalRecord = await this.medicalRecordRepository.findOne({
-        where: { id },
+        where: { id: protocol_before },
       })
       if (!medicalRecord) {
         throw new NotFoundException('Medical record not found')
@@ -301,7 +305,7 @@ export class MedicalRecordService {
         level_doctor: level_doctor ? levelMappingNumber[mappingLevelDoctor] : null,
         question_answer: resultQandA,
       }
-      await this.medicalRecordRepository.update(id, {
+      await this.medicalRecordRepository.update(protocol_before, {
         code: code || medicalRecord.code,
         doctor: doctor || medicalRecord.doctor,
         patient: patient || medicalRecord.patient,
@@ -309,7 +313,7 @@ export class MedicalRecordService {
         records: [...medicalRecord.records, newRecord],
       })
       return {
-        id,
+        id: protocol_before,
         code,
         records: newRecord,
         change_protocol: protocolChangeList.length > 0 ? protocolChangeList : undefined,
