@@ -8,14 +8,17 @@ import { ClassifyQuestionModule } from './modules/classify-question/classify-que
 import { ClassifyQuestion } from './modules/classify-question/classify-question.entity'
 import { MedicalRecordModule } from './modules/medical-record/medical-record.module'
 import { MedicalRecord } from './modules/medical-record/medical-record.entity'
+import { ExplainLevelModule } from './modules/explain-level/explain-level.module'
+import { ExplainLevel } from './modules/explain-level/explain-level.entity'
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
-    TypeOrmModule.forFeature([Protocol, ClassifyQuestion, MedicalRecord]),
+    TypeOrmModule.forFeature([Protocol, ClassifyQuestion, MedicalRecord, ExplainLevel]),
     // UsersModule,
     ProtocolModule,
     ClassifyQuestionModule,
     MedicalRecordModule,
+    ExplainLevelModule,
   ],
   controllers: [],
   providers: [
