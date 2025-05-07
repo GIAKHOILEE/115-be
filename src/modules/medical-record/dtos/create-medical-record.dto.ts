@@ -171,3 +171,26 @@ export class CreateMedicalRecordDtoV2 {
   })
   resultQandA: IQuestion[]
 }
+
+export class SubmitPatientDto {
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({
+    description: 'Mã bệnh án',
+    example: 'MD_123456789',
+  })
+  code: string
+
+  @IsNotEmpty()
+  @IsObject()
+  @ApiProperty({
+    description: 'Patient information',
+    example: {
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      birth_date: '1990-01-01',
+      gender: 'male',
+    },
+  })
+  patient: Ipatient
+}

@@ -8,7 +8,11 @@ import { IMedicalRecord, IProtocolChange, IRecord } from './medical-record.inter
 import { ClassifyQuestion } from '../classify-question/classify-question.entity'
 import { IAnswer, IQuestion } from '../classify-question/classify-question.interface'
 import { formatArrayToObject } from 'src/common/utils'
-import { CreateMedicalRecordDto, CreateMedicalRecordDtoV2 } from './dtos/create-medical-record.dto'
+import {
+  CreateMedicalRecordDto,
+  CreateMedicalRecordDtoV2,
+  SubmitPatientDto,
+} from './dtos/create-medical-record.dto'
 import { RecordLevel } from 'src/constants/record-level.enum'
 import { paginate } from 'src/common/pagination'
 import { PaginateMedicalRecordDto } from './dtos/paginate-medical-record.dto'
@@ -264,7 +268,8 @@ export class MedicalRecordService {
       for (const answer of question.answer) {
         if (answer.change_protocol) {
           changeProtocols.push(answer.change_protocol)
-        } else if (colorPriority.indexOf(answer.level) > colorPriority.indexOf(highestLevel)) {
+        }
+        if (colorPriority.indexOf(answer.level) > colorPriority.indexOf(highestLevel)) {
           highestLevel = answer.level
         }
       }
