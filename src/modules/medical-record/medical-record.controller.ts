@@ -2,7 +2,11 @@ import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common'
 import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import { ResponseDto } from 'src/common/response.dto'
 import { CheckProtocolChangeDto } from './dtos/check-change-protocol.dto'
-import { CreateMedicalRecordDto, CreateMedicalRecordDtoV2 } from './dtos/create-medical-record.dto'
+import {
+  CreateMedicalRecordDto,
+  CreateMedicalRecordDtoV2,
+  SubmitPatientDto,
+} from './dtos/create-medical-record.dto'
 import { MedicalRecordService } from './medical-record.service'
 import { PaginateMedicalRecordDto } from './dtos/paginate-medical-record.dto'
 
@@ -72,6 +76,24 @@ export class MedicalRecordController {
     const data = await this.medicalRecordService.submitMedicalRecordV2(submitMedicalRecordDto, id)
     return new ResponseDto({
       messageCode: 'SUBMIT_MEDICAL_RECORD_SUCCESS',
+      statusCode: 200,
+      data,
+    })
+  }
+
+  @Post('code-patient')
+  @ApiOperation({ summary: 'Submit patient' })
+  @ApiResponse({
+    status: 200,
+    description: 'Submit patient success',
+  })
+  async submitPatient(
+    @Body() submitPatientDto: SubmitPatientDto,
+    @Query('id') id?: number,
+  ): Promise<ResponseDto> {
+    const data = await this.medicalRecordService.submitPatient(submitPatientDto, id)
+    return new ResponseDto({
+      messageCode: 'SUBMIT_PATIENT_SUCCESS',
       statusCode: 200,
       data,
     })

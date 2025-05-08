@@ -355,6 +355,35 @@ export class MedicalRecordService {
     }
   }
 
+  async submitPatient(submitPatientDto: SubmitPatientDto, id?: number): Promise<any> {
+    const { code, patient } = submitPatientDto
+    const isExistMedicalRecord = await this.medicalRecordRepository
+      .createQueryBuilder('medical_records')
+      .select(['medical_records.code', 'medical_records.patient', 'medical_records.id'])
+      .where('medical_records.id = :id', { id })
+      .getOne()
+
+    if (!isExistMedicalRecord) {
+      throw new NotFoundException('Medical record not found')
+    }
+
+    // check code đã tồn tại
+    const isExistCode = await this.medicalRecordRepository
+      .createQueryBuilder('medical_records')
+      .select(['medical_records.code'])
+      .where('medical_records.code = :code', { code })
+      .getOne()
+
+    if (isExistCode && isExistCode.id !== id) {
+      throw new BadRequestException('Code already exists')
+    }
+
+    await this.medicalRecordRepository.update(id, {
+      patient: patient || isExistMedicalRecord.patient,
+      code: code || isExistMedicalRecord.code,
+    })
+  }
+
   // get List Medical Record
   async getListMedicalRecord(paginateMedicalRecordDto: PaginateMedicalRecordDto): Promise<IMedicalRecord[]> {
     const medicalRecords = await this.medicalRecordRepository
