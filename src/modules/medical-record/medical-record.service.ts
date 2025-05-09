@@ -11,6 +11,7 @@ import { formatArrayToObject } from 'src/common/utils'
 import {
   CreateMedicalRecordDto,
   CreateMedicalRecordDtoV2,
+  SubmitDoctorDto,
   SubmitPatientDto,
 } from './dtos/create-medical-record.dto'
 import { RecordLevel } from 'src/constants/record-level.enum'
@@ -382,6 +383,29 @@ export class MedicalRecordService {
       patient: patient || isExistMedicalRecord.patient,
       code: code || isExistMedicalRecord.code,
     })
+  }
+
+  async submitDoctor(submitDoctorDto: SubmitDoctorDto, id?: number): Promise<any> {
+    const { doctor } = submitDoctorDto
+
+    const isExistMedicalRecord = await this.medicalRecordRepository
+      .createQueryBuilder('medical_records')
+      .select(['medical_records.id'])
+      .where('medical_records.id = :id', { id })
+      .getOne()
+
+    if (!isExistMedicalRecord) {
+      throw new NotFoundException('Medical record not found')
+    }
+
+    await this.medicalRecordRepository.update(id, {
+      doctor: doctor || isExistMedicalRecord.doctor,
+    })
+
+    return {
+      id,
+      doctor,
+    }
   }
 
   // get List Medical Record

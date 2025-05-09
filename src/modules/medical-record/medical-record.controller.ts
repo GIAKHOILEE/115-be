@@ -5,6 +5,7 @@ import { CheckProtocolChangeDto } from './dtos/check-change-protocol.dto'
 import {
   CreateMedicalRecordDto,
   CreateMedicalRecordDtoV2,
+  SubmitDoctorDto,
   SubmitPatientDto,
 } from './dtos/create-medical-record.dto'
 import { MedicalRecordService } from './medical-record.service'
@@ -94,6 +95,20 @@ export class MedicalRecordController {
     const data = await this.medicalRecordService.submitPatient(submitPatientDto, id)
     return new ResponseDto({
       messageCode: 'SUBMIT_PATIENT_SUCCESS',
+      statusCode: 200,
+      data,
+    })
+  }
+
+  @Post('doctor')
+  @ApiOperation({ summary: 'Submit doctor' })
+  async submitDoctor(
+    @Body() submitDoctorDto: SubmitDoctorDto,
+    @Query('id') id?: number,
+  ): Promise<ResponseDto> {
+    const data = await this.medicalRecordService.submitDoctor(submitDoctorDto, id)
+    return new ResponseDto({
+      messageCode: 'SUBMIT_DOCTOR_SUCCESS',
       statusCode: 200,
       data,
     })
