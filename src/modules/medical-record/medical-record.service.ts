@@ -7,7 +7,7 @@ import { MedicalRecord } from './medical-record.entity'
 import { IMedicalRecord, IProtocolChange, IRecord } from './medical-record.interface'
 import { ClassifyQuestion } from '../classify-question/classify-question.entity'
 import { IAnswer, IQuestion } from '../classify-question/classify-question.interface'
-import { formatArrayToObject } from 'src/common/utils'
+import { formatArrayToObject, validateEmail } from 'src/common/utils'
 import {
   CreateMedicalRecordDto,
   CreateMedicalRecordDtoV2,
@@ -356,54 +356,35 @@ export class MedicalRecordService {
     }
   }
 
-  async submitPatient(submitPatientDto: SubmitPatientDto, id?: number): Promise<any> {
+  async submitPatient(submitPatientDto: SubmitPatientDto): Promise<any> {
     const { code, patient } = submitPatientDto
-    const isExistMedicalRecord = await this.medicalRecordRepository
-      .createQueryBuilder('medical_records')
-      .select(['medical_records.code', 'medical_records.patient', 'medical_records.id'])
-      .where('medical_records.id = :id', { id })
-      .getOne()
 
-    if (!isExistMedicalRecord) {
-      throw new NotFoundException('Medical record not found')
+    if (!code) {
+      throw new BadRequestException('Code is required')
     }
-
-    // check code đã tồn tại
-    const isExistCode = await this.medicalRecordRepository
-      .createQueryBuilder('medical_records')
-      .select(['medical_records.code'])
-      .where('medical_records.code = :code', { code })
-      .getOne()
-
-    if (isExistCode && isExistCode.id !== id) {
-      throw new BadRequestException('Code already exists')
+    if (patient.email && !validateEmail(patient.email)) {
+      throw new BadRequestException('Email is invalid')
     }
-
-    await this.medicalRecordRepository.update(id, {
-      patient: patient || isExistMedicalRecord.patient,
-      code: code || isExistMedicalRecord.code,
-    })
+    if (!patient.name) {
+      throw new BadRequestException('Name is required')
+    }
+    return {
+      code,
+      patient,
+    }
   }
 
-  async submitDoctor(submitDoctorDto: SubmitDoctorDto, id?: number): Promise<any> {
+  async submitDoctor(submitDoctorDto: SubmitDoctorDto): Promise<any> {
     const { doctor } = submitDoctorDto
 
-    const isExistMedicalRecord = await this.medicalRecordRepository
-      .createQueryBuilder('medical_records')
-      .select(['medical_records.id'])
-      .where('medical_records.id = :id', { id })
-      .getOne()
-
-    if (!isExistMedicalRecord) {
-      throw new NotFoundException('Medical record not found')
+    if (doctor.email && !validateEmail(doctor.email)) {
+      throw new BadRequestException('Email is invalid')
+    }
+    if (!doctor.name) {
+      throw new BadRequestException('Name is required')
     }
 
-    await this.medicalRecordRepository.update(id, {
-      doctor: doctor || isExistMedicalRecord.doctor,
-    })
-
     return {
-      id,
       doctor,
     }
   }

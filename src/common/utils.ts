@@ -40,3 +40,8 @@ export function formatArrayToObject(arr: any[], key: string = 'id') {
 
   return result
 }
+
+export function validateEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
+}

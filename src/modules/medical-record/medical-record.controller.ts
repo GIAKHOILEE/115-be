@@ -88,11 +88,8 @@ export class MedicalRecordController {
     status: 200,
     description: 'Submit patient success',
   })
-  async submitPatient(
-    @Body() submitPatientDto: SubmitPatientDto,
-    @Query('id') id?: number,
-  ): Promise<ResponseDto> {
-    const data = await this.medicalRecordService.submitPatient(submitPatientDto, id)
+  async submitPatient(@Body() submitPatientDto: SubmitPatientDto): Promise<ResponseDto> {
+    const data = await this.medicalRecordService.submitPatient(submitPatientDto)
     return new ResponseDto({
       messageCode: 'SUBMIT_PATIENT_SUCCESS',
       statusCode: 200,
@@ -102,11 +99,8 @@ export class MedicalRecordController {
 
   @Post('doctor')
   @ApiOperation({ summary: 'Submit doctor' })
-  async submitDoctor(
-    @Body() submitDoctorDto: SubmitDoctorDto,
-    @Query('id') id?: number,
-  ): Promise<ResponseDto> {
-    const data = await this.medicalRecordService.submitDoctor(submitDoctorDto, id)
+  async submitDoctor(@Body() submitDoctorDto: SubmitDoctorDto): Promise<ResponseDto> {
+    const data = await this.medicalRecordService.submitDoctor(submitDoctorDto)
     return new ResponseDto({
       messageCode: 'SUBMIT_DOCTOR_SUCCESS',
       statusCode: 200,
