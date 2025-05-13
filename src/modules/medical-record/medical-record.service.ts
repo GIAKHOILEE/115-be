@@ -362,6 +362,17 @@ export class MedicalRecordService {
     if (!code) {
       throw new BadRequestException('Code is required')
     }
+
+    const existCode = await this.medicalRecordRepository
+      .createQueryBuilder('medical_records')
+      .select(['medical_records.code'])
+      .where('medical_records.code = :code', { code })
+      .getOne()
+
+    if (existCode) {
+      throw new BadRequestException('Code already exists')
+    }
+
     if (patient.email && !validateEmail(patient.email)) {
       throw new BadRequestException('Email is invalid')
     }
