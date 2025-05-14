@@ -188,7 +188,7 @@ export class SubmitPatientDto {
     example: {
       name: 'John Doe',
       email: 'john.doe@example.com',
-      birth_date: '1990-01-01',
+      birth: '1990-01-01',
       gender: 'male',
     },
   })
@@ -201,9 +201,9 @@ export class SubmitDoctorDto {
   @ApiProperty({
     description: 'Doctor information',
     example: {
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      birth_date: '1990-01-01',
+      name: 'Vu',
+      email: 'hoangvu.nhv.xyz@gmail.com',
+      birth: '1990-01-01',
       gender: 'male',
       role: 'doctor',
     },

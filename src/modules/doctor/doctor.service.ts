@@ -10,6 +10,10 @@ export class DoctorService {
     private readonly doctorRepository: Repository<Doctor>,
   ) {}
 
+  async getAllDoctors(): Promise<Doctor[]> {
+    return this.doctorRepository.find()
+  }
+
   async getDoctor(id: number): Promise<Doctor> {
     const existDoctor = await this.doctorRepository.findOne({ where: { id } })
     if (!existDoctor) {

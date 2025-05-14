@@ -17,6 +17,16 @@ export class DoctorController {
   //     })
   //   }
 
+  @Get()
+  async getAllDoctors(): Promise<ResponseDto> {
+    const data = await this.doctorService.getAllDoctors()
+    return new ResponseDto({
+      messageCode: 'GET_ALL_DOCTORS_SUCCESS',
+      statusCode: 200,
+      data,
+    })
+  }
+
   @Get(':id')
   async getDoctor(@Param('id') id: number): Promise<ResponseDto> {
     const data = await this.doctorService.getDoctor(id)
