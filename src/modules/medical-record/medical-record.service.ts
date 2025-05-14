@@ -17,7 +17,7 @@ import {
 import { RecordLevel } from 'src/constants/record-level.enum'
 import { paginate } from 'src/common/pagination'
 import { PaginateMedicalRecordDto } from './dtos/paginate-medical-record.dto'
-
+import { Doctor } from '../doctor/doctor.entity'
 @Injectable()
 export class MedicalRecordService {
   constructor(
@@ -27,6 +27,8 @@ export class MedicalRecordService {
     private readonly protocolRepository: Repository<Protocol>,
     @InjectRepository(ClassifyQuestion)
     private readonly classifyQuestionRepository: Repository<ClassifyQuestion>,
+    @InjectRepository(Doctor)
+    private readonly doctorRepository: Repository<Doctor>,
   ) {}
 
   // Hàm kiểm tra chuyển giao thức
@@ -395,8 +397,28 @@ export class MedicalRecordService {
       throw new BadRequestException('Name is required')
     }
 
+    // Kiểm tra email đã tồn tại
+    if (doctor.email) {
+      const existDoctor = await this.doctorRepository.findOne({
+        where: { email: doctor.email },
+      })
+
+      if (existDoctor) {
+        throw new BadRequestException('Email already exists')
+      }
+    }
+
+    const newDoctor = this.doctorRepository.create({
+      ...doctor,
+    })
+    await this.doctorRepository.save(newDoctor)
     return {
-      doctor,
+      id: newDoctor.id,
+      name: newDoctor.name,
+      email: newDoctor.email,
+      birth: newDoctor.birth,
+      gender: newDoctor.gender,
+      role: newDoctor.role,
     }
   }
 
