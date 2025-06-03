@@ -31,6 +31,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check SSH connectivity
+        run: nc -vz 34.55.22.196 22 || echo "SSH connection failed"
+
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v0.1.6
         with:
