@@ -20,4 +20,5 @@ export interface IAnswer {
   value: string
   level: RecordLevel
   change_protocol: number | null
+  priority: number
 }

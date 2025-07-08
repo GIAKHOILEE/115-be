@@ -11,6 +11,7 @@ import { formatArrayToObject, validateEmail } from 'src/common/utils'
 import {
   CreateMedicalRecordDto,
   CreateMedicalRecordDtoV2,
+  CreateMedicalRecordDtoV3,
   SubmitDoctorDto,
   SubmitPatientDto,
 } from './dtos/create-medical-record.dto'
@@ -172,6 +173,7 @@ export class MedicalRecordService {
     }
   }
 
+  // V2 là check level bằng color(number)
   async submitMedicalRecordV2(submitMedicalRecordDto: CreateMedicalRecordDtoV2, id?: number): Promise<any> {
     // id là protocol_code
     const {
@@ -349,6 +351,196 @@ export class MedicalRecordService {
         level_doctor: level_doctor ? levelMappingNumber[mappingLevelDoctor] : null,
       })
       const savedMedicalRecord = await this.medicalRecordRepository.save(medicalRecord)
+      return {
+        id: savedMedicalRecord.id,
+        code,
+        records: [newRecord],
+        change_protocol: protocolChangeList.length > 0 ? protocolChangeList : undefined,
+      }
+    }
+  }
+
+  // v3 là check level bằng priority
+  async submitMedicalRecordV3(submitMedicalRecordDto: CreateMedicalRecordDtoV3, id?: number): Promise<any> {
+    const {
+      doctor,
+      patient,
+      protocol_code,
+      code,
+      resultQandA,
+      note,
+      protocol_before,
+      level_doctor,
+      medical_advice,
+    } = submitMedicalRecordDto
+
+    if (!code && !protocol_before) {
+      throw new BadRequestException('Code is required')
+    }
+
+    if (code) {
+      const isExistCode = await this.medicalRecordRepository
+        .createQueryBuilder('medical_records')
+        .select(['medical_records.code'])
+        .where('medical_records.code = :code', { code })
+        .getOne()
+
+      if (isExistCode) {
+        throw new BadRequestException('Code already exists')
+      }
+    }
+
+    if (patient && !patient.name) {
+      throw new BadRequestException('Patient name is required')
+    }
+
+    if (protocol_before) {
+      const isExistProtocolBefore = await this.medicalRecordRepository
+        .createQueryBuilder('medical_records')
+        .select(['medical_records.id'])
+        .where('medical_records.id = :id', { id: protocol_before })
+        .getOne()
+
+      if (!isExistProtocolBefore) {
+        throw new NotFoundException('Protocol before not found')
+      }
+    }
+
+    const isExistProtocol = await this.protocolRepository
+      .createQueryBuilder('protocols')
+      .select(['protocols.protocol_code'])
+      .where('protocols.protocol_code = :protocol_code', { protocol_code })
+      .getOne()
+
+    if (!isExistProtocol) {
+      throw new NotFoundException('Protocol not found')
+    }
+
+    const classifyQuestion = await this.classifyQuestionRepository
+      .createQueryBuilder('classify_questions')
+      .select(['classify_questions.questions'])
+      .where('classify_questions.protocol_code = :protocol_code', { protocol_code })
+      .getOne()
+
+    if (!classifyQuestion) {
+      throw new NotFoundException('Classify question not found')
+    }
+
+    // Tạo Map từ answer.id -> { priority, level }
+    const answerMetaMap = new Map<number, { priority: number }>()
+    for (const question of classifyQuestion.questions) {
+      for (const answer of question.answer) {
+        answerMetaMap.set(answer.id, {
+          priority: answer.priority,
+        })
+      }
+    }
+
+    const answerMap = new Map<number, IAnswer>()
+
+    for (const question of classifyQuestion.questions) {
+      for (const answer of question.answer) {
+        answerMap.set(answer.id, answer)
+      }
+    }
+
+    // Tìm câu trả lời có priority nhỏ nhất
+    let minPriority = 6
+    let selectedLevel: RecordLevel = RecordLevel.Green
+    let changeProtocols: number[] = []
+
+    for (const question of resultQandA) {
+      for (const answer of question.answer) {
+        const dbAnswer = answerMap.get(answer.id)
+        if (dbAnswer) {
+          if (dbAnswer.change_protocol) {
+            changeProtocols.push(dbAnswer.change_protocol)
+          }
+
+          if (dbAnswer.priority < minPriority) {
+            minPriority = dbAnswer.priority
+            selectedLevel = dbAnswer.level
+          }
+        }
+      }
+    }
+
+    // Nếu có change_protocol thì lấy danh sách protocol liên quan
+    let protocolChangeList: IProtocolChange[] = []
+    if (changeProtocols.length > 0) {
+      protocolChangeList = await this.protocolRepository
+        .createQueryBuilder('protocols')
+        .select(['protocols.protocol_code', 'protocols.name'])
+        .where('protocols.protocol_code IN (:...protocol_codes)', {
+          protocol_codes: changeProtocols,
+        })
+        .getMany()
+    }
+
+    const changeNumber: Record<RecordLevel, number> = {
+      [RecordLevel.Green]: 1,
+      [RecordLevel.Blue]: 2,
+      [RecordLevel.Yellow]: 3,
+      [RecordLevel.Red]: 4,
+      [RecordLevel.Purple]: 5,
+      [RecordLevel.Orange]: 6,
+    }
+
+    const changeString: Record<number, RecordLevel> = {
+      1: RecordLevel.Green,
+      2: RecordLevel.Blue,
+      3: RecordLevel.Yellow,
+      4: RecordLevel.Red,
+      5: RecordLevel.Purple,
+      6: RecordLevel.Orange,
+    }
+
+    const newRecord: IRecord = {
+      protocol_code,
+      note: note || null,
+      protocol_before: protocol_before || null,
+      level_system: changeNumber[selectedLevel],
+      level_doctor: level_doctor ? level_doctor : null,
+      question_answer: resultQandA,
+    }
+
+    if (protocol_before) {
+      const medicalRecord = await this.medicalRecordRepository.findOne({
+        where: { id: protocol_before },
+      })
+      if (!medicalRecord) {
+        throw new NotFoundException('Medical record not found')
+      }
+
+      await this.medicalRecordRepository.update(protocol_before, {
+        code: code || medicalRecord.code,
+        doctor: doctor || medicalRecord.doctor,
+        patient: patient || medicalRecord.patient,
+        medical_advice: medical_advice ?? medicalRecord.medical_advice,
+        records: [...medicalRecord.records, newRecord],
+      })
+
+      return {
+        id: protocol_before,
+        code,
+        records: newRecord,
+        change_protocol: protocolChangeList.length > 0 ? protocolChangeList : undefined,
+      }
+    } else {
+      const medicalRecord: MedicalRecord = this.medicalRecordRepository.create({
+        code,
+        doctor: doctor || null,
+        patient: patient || null,
+        note: note || null,
+        medical_advice: medical_advice ?? false,
+        protocol_before: null,
+        records: [newRecord],
+        level_system: selectedLevel,
+        level_doctor: level_doctor ? changeString[level_doctor] : null,
+      })
+
+      const savedMedicalRecord = await this.medicalRecordRepository.save(medicalRecord)
+
       return {
         id: savedMedicalRecord.id,
         code,

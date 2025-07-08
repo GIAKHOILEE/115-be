@@ -42,7 +42,7 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             cd /home/115/dev/115-be
-            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_ACCESS_TOKEN }}
-            docker pull ${{ secrets.DOCKER_USERNAME }}/115-be:latest
-            docker compose down
-            docker compose up -d
+            sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_ACCESS_TOKEN }}
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/115-be:latest
+            sudo docker-compose down
+            sudo docker-compose up -d

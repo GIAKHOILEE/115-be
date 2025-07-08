@@ -49,6 +49,7 @@ export class ClassifyQuestionService {
         value: answer.value,
         level: answer.level,
         change_protocol: answer.change_protocol,
+        priority: answer.priority,
       })),
     }))
 
@@ -116,6 +117,7 @@ export class ClassifyQuestionService {
         value: answer.value,
         level: answer.level,
         change_protocol: answer.change_protocol,
+        priority: answer.priority,
       })),
     }))
 
@@ -171,6 +173,7 @@ export class ClassifyQuestionService {
           value: answer.value,
           level: answer.level,
           change_protocol: answer.change_protocol,
+          priority: answer.priority,
         })),
       }))
 
