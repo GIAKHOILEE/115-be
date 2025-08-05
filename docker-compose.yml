@@ -1,8 +1,8 @@
-version: "3.8"
+version: '3.8'
 
 services:
   app:
-    image: "${DOCKER_USERNAME}/115-be:latest"
+    image: '${DOCKER_USERNAME}/115-be:latest'
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,7 +11,7 @@ services:
     env_file:
       - .env
     ports:
-      - "${APP_PORT_PUBLIC}:${PORT}"
+      - '${APP_PORT_PUBLIC}:${PORT}'
     depends_on:
       - mysql
     networks:
@@ -21,12 +21,10 @@ services:
     container_name: 115-mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
-      MYSQL_DATABASE: "${DB_DATABASE}"
-      MYSQL_USER: "${DB_USERNAME}"
-      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_DATABASE: '${DB_DATABASE}'
     ports:
-      - "3307:3306"
+      - '${DB_PORT_PUBLIC}:3306'
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
